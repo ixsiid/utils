@@ -66,7 +66,7 @@
 
 			document.querySelector('#download').addEventListener('click', () => {
 				const a = document.createElement('a');
-				a.href = `data:image/png;base64,${canvas.toDataURL('image/png')}`;
+				a.href = canvas.toDataURL('image/png');
 				a.download = 'framed.png';
 				a.click();
 			});
