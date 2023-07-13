@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script>
+
+		window.addEventListener('load', () => {
+			const canvas = document.querySelector('#canvas');
+			const context = canvas.getContext('2d');
+
+			const draw_frame = (width, height) => {
+				const height_top = width / 1500 * 1200;
+				const height_btm = width / 1500 * 500;
+				const height_mid = height - height_top - height_btm;
+
+				const frame_top = new Image();
+				frame_top.addEventListener('load', () => {
+					context.drawImage(frame_top, 0, 0, width, height_top);
+				}, { once: true });
+
+				const frame_middle = new Image();
+				frame_middle.addEventListener('load', () => {
+					context.drawImage(frame_middle, 0, height_top - 1, width, height_mid);
+				}, { once: true });
+
+				const frame_bottom = new Image();
+				frame_bottom.addEventListener('load', () => {
+					context.drawImage(frame_bottom, 0, height_top + height_mid - 1, width, height_btm);
+				}, { once: true });
+
+				frame_top.src = 'iPhone-12-nature_Remo_e_lite_top.png';
+				frame_middle.src = 'iPhone-12-nature_Remo_e_lite_middle.png';
+				frame_bottom.src = 'iPhone-12-nature_Remo_e_lite_bottom.png';
+			};
+
+			document.querySelector('#screenshot').addEventListener('change', event => {
+				const reader = new FileReader();
+				const ss = new Image();
+
+				reader.addEventListener('load', event => {
+					ss.src = event.target.result;
+				});
+
+				ss.addEventListener('load', () => {
+					const w = ss.width;
+					const h = ss.height;
+
+					// offsetX: 196, clientWidth: 1169
+					// padding-left: 196, padding-right: 108
+					// offsetTop: 196, padding-bottom: 170;
+
+					const W = Math.floor(w / 1169 * 1500);
+					const H = Math.floor(w / 1169 * (h + 196 + 170));
+					const p = Math.floor(w / 1169 * 196);
+
+					canvas.setAttribute('width', W);
+					canvas.setAttribute('height', H - 2);
+
+					context.drawImage(ss, p, p);
+					draw_frame(W, H);
+				});
+
+				console.log(event);
+				reader.readAsDataURL(event.srcElement.files[0]);
+			});
+
+			document.querySelector('#download').addEventListener('click', () => {
+				const a = document.createElement('a');
+				a.href = `data:image/png;base64,${canvas.toDataURL('image/png')}`;
+				a.download = 'framed.png';
+				a.click();
+			});
+		}, { once: true });
+	</script>
+	<style>
+		#control {
+			display: flex;
+			position: absolute;
+		}
+
+		#canvas {
+			border: solid black 1px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="control">
+		<label>Screenshotを選択<input type="file" id="screenshot" /></label>
+		<button id="download">Download</button>
+	</div>
+	<canvas id="canvas"></canvas>
+</body>
+
+</html>
