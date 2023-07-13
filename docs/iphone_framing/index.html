@@ -50,7 +50,7 @@
 					// offsetTop: 196, padding-bottom: 170;
 
 					const W = Math.floor(w / 1169 * 1500);
-					const H = Math.floor(w / 1169 * (h + 196 + 170));
+					const H = Math.floor(h + (196 + 170) / 1169 * w);
 					const p = Math.floor(w / 1169 * 196);
 
 					canvas.setAttribute('width', W);
