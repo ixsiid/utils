@@ -3,6 +3,21 @@
 
 <head>
 	<script>
+		const frames = {
+			iphone12: [{
+				src: 'iphone12/iPhone-12-nature_Remo_e_lite_top.png',
+				width: 1500,
+				height: 1200,
+			},{
+				src: 'iphone12/iPhone-12-nature_Remo_e_lite_middle.png',
+				width: 1500,
+				height: 32,
+			},{
+				src: 'iphone12/iPhone-12-nature_Remo_e_lite_bottom.png',
+				width: 1500,
+				height: 500,
+			}],
+		}
 
 		window.addEventListener('load', () => {
 			const canvas = document.querySelector('#canvas');
@@ -28,9 +43,9 @@
 					context.drawImage(frame_bottom, 0, height_top + height_mid - 1, width, height_btm);
 				}, { once: true });
 
-				frame_top.src = 'iPhone-12-nature_Remo_e_lite_top.png';
-				frame_middle.src = 'iPhone-12-nature_Remo_e_lite_middle.png';
-				frame_bottom.src = 'iPhone-12-nature_Remo_e_lite_bottom.png';
+				frame_top.src = 'iphone12/iPhone-12-nature_Remo_e_lite_top.png';
+				frame_middle.src = 'iphone12/iPhone-12-nature_Remo_e_lite_middle.png';
+				frame_bottom.src = 'iphone12/iPhone-12-nature_Remo_e_lite_bottom.png';
 			};
 
 			document.querySelector('#screenshot').addEventListener('change', event => {

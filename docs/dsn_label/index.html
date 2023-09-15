@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+		}
+
+		@media print {
+			.no-print {
+				display: none;
+			}
+		}
+	</style>
+	<script>
+		const check_digit_b = text => {
+			const d = Array.from(text)
+				.reduce((sum, char) => sum += char.charCodeAt(0), 104) % 103; // CODE Bのスタートコードが 104
+			if (d == 0) return 'ｽ';
+			if (d >= 95) return 'ｱｲｳｴｵｶｷｸ'[d - 95];
+			return String.fromCharCode(d + 32);
+		};
+
+		const label = `		<g style="display:inline">
+			<text x="0" y="47" style="font-size:42.53pt;font-family:'BCODE128H'">%SN_CODE%</text>
+			<text x="0" y="77" style="font-size:16pt;">DSN&nbsp;&nbsp;%SN%</text>
+		</g>`;
+		window.addEventListener('load', () => {
+			document.getElementById('dsn')
+				.addEventListener('change', e => {
+					const sn = e.target.value;
+
+					const root = document.querySelector(`#svg`);
+					const l = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+					l.innerHTML = label
+						.replace(/%SN%/g, sn)
+						.replace(/%SN_CODE%/g, `ｺ${sn}${check_digit_b(sn)}ｼ`);
+					root.appendChild(l);
+				});
+
+			document.querySelector('#download')
+				.addEventListener('click', () => {
+					const canvas = document.createElement("canvas");
+					canvas.setAttribute("width", 270);
+					canvas.setAttribute("height", 90);
+					const context = canvas.getContext("2d");
+					context.imageSmoothingEnabled = false;
+
+					const a = document.createElement("a");
+
+					const image = new Image();
+					image.addEventListener("load", () => {
+						context.drawImage(image, 0, 0, 270, 90, 0, 0, 176, 90);
+						a.setAttribute("href", canvas.toDataURL("image/png"));
+						a.setAttribute("download", "image.png");
+						a.click();
+					}, { once: true });
+					image.setAttribute("src",
+						"data:image/svg+xml;charset=utf-8;base64," +
+						btoa(unescape(encodeURIComponent(
+							new XMLSerializer().serializeToString(document.querySelector('#svg'))
+						)))
+					);
+
+				});
+		}, { once: true });
+	</script>
+</head>
+
+<body>
+	<div><label class="no-print">DSN <input type="text" id="dsn" /></label></div>
+	<svg width="270px" height="90px" viewBox="0 0 270 90" version="1.1" id="svg" xmlns="http://www.w3.org/2000/svg"
+		xmlns:svg="http://www.w3.org/2000/svg">
+	</svg>
+	<button id="download">Download</button>
+</body>
+
+</html>
