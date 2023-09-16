@@ -3,29 +3,82 @@
 
 <head>
 	<script>
-		const frames = {
-			iphone12: [{
-				src: 'iphone12/iPhone-12-nature_Remo_e_lite_top.png',
-				width: 1500,
-				height: 1200,
-			},{
-				src: 'iphone12/iPhone-12-nature_Remo_e_lite_middle.png',
-				width: 1500,
-				height: 32,
-			},{
-				src: 'iphone12/iPhone-12-nature_Remo_e_lite_bottom.png',
-				width: 1500,
-				height: 500,
-			}],
-		}
+		/**
+		 * @typedef {object} FrameImage
+		 * @property {string} src
+		 * @property {number} height
+		 */
+		/**
+		 * @typedef {object} Frame
+		 * @property {string} name
+		 * @property {object} image
+		 * @property {FrameImage} image.top
+		 * @property {FrameImage} image.middle
+		 * @property {FrameImage} image.bottom
+		 * @property {number} left
+		 * @property {number} top
+		 * @property {number} bottom
+		 * @property {number} right
+		 */
+
+		/** @type {Array<Frame>} */
+		const frames = [{
+			name: 'iPhone12',
+			image: {
+				top: {
+					src: 'iphone12/iPhone-12-nature_Remo_e_lite_top.png',
+					height: 1200,
+				},
+				middle: {
+					src: 'iphone12/iPhone-12-nature_Remo_e_lite_middle.png',
+					height: 32,
+				},
+				bottom: {
+					src: 'iphone12/iPhone-12-nature_Remo_e_lite_bottom.png',
+					height: 500,
+				},
+			},
+			width: 1500,
+			left: 196,
+			top: 196,
+			bottom: 170,
+			right: 108,
+		}, {
+			name: 'iPhone14',
+			default: true,
+			image: {
+				top: {
+					src: 'iphone14/iPhone-14_top.png',
+					height: 420,
+				},
+				middle: {
+					src: 'iphone14/iPhone-14_middle.png',
+					height: 32,
+				},
+				bottom: {
+					src: 'iphone14/iPhone-14_bottom.png',
+					height: 125,
+				},
+			},
+			width: 471,
+			left: 26,
+			top: 22,
+			bottom: 21,
+			right: 26,
+		}];
 
 		window.addEventListener('load', () => {
 			const canvas = document.querySelector('#canvas');
 			const context = canvas.getContext('2d');
 
-			const draw_frame = (width, height) => {
-				const height_top = width / 1500 * 1200;
-				const height_btm = width / 1500 * 500;
+			/**
+			 * @param {number} width
+			 * @param {number} height
+			 * @param {Frame} frame
+			 */
+			const draw_frame = (width, height, frame) => {
+				const height_top = width / frame.width * frame.image.top.height;
+				const height_btm = width / frame.width * frame.image.bottom.height;
 				const height_mid = height - height_top - height_btm;
 
 				const frame_top = new Image();
@@ -43,9 +96,9 @@
 					context.drawImage(frame_bottom, 0, height_top + height_mid - 1, width, height_btm);
 				}, { once: true });
 
-				frame_top.src = 'iphone12/iPhone-12-nature_Remo_e_lite_top.png';
-				frame_middle.src = 'iphone12/iPhone-12-nature_Remo_e_lite_middle.png';
-				frame_bottom.src = 'iphone12/iPhone-12-nature_Remo_e_lite_bottom.png';
+				frame_top.src = frame.image.top.src;
+				frame_middle.src = frame.image.middle.src;
+				frame_bottom.src = frame.image.bottom.src;
 			};
 
 			document.querySelector('#screenshot').addEventListener('change', event => {
@@ -60,23 +113,29 @@
 					const w = ss.width;
 					const h = ss.height;
 
-					// offsetX: 196, clientWidth: 1169
-					// padding-left: 196, padding-right: 108
-					// offsetTop: 196, padding-bottom: 170;
+					const frame_name = Array.from(document.querySelectorAll('input[name="frame"]'))
+						.find(x => x.checked)
+						.getAttribute('value');
+					const frame = frames.find(x => x.name === frame_name);
+					console.log(frame);
 
-					const W = Math.floor(w / 1169 * 1500);
-					const H = Math.floor(h + (196 + 170) / 1169 * w);
-					const p = Math.floor(w / 1169 * 196);
+					const clientWidth = (frame.width - frame.left - frame.right)
+					const W = Math.floor(w / clientWidth * frame.width);
+					const H = Math.floor(h + (frame.top + frame.bottom) / clientWidth * w);
+					const px = Math.floor(w / clientWidth * frame.left);
+					const py = Math.floor(w / clientWidth * frame.top);
 
 					canvas.setAttribute('width', W);
 					canvas.setAttribute('height', H - 2);
 
-					context.drawImage(ss, p, p);
-					draw_frame(W, H);
+					context.drawImage(ss, px, py);
+					draw_frame(W, H, frame);
 				});
 
 				console.log(event);
 				reader.readAsDataURL(event.srcElement.files[0]);
+
+				event.srcElement.setAttribute('value', null);
 			});
 
 			document.querySelector('#download').addEventListener('click', () => {
@@ -84,6 +143,22 @@
 				a.href = canvas.toDataURL('image/png');
 				a.download = 'framed.png';
 				a.click();
+			});
+
+			// フレームリストのラジオボタンを作る
+			const frame_list = document.querySelector('#frames');
+			frames.forEach(x => {
+				const li = document.createElement('li');
+				const label = document.createElement('label');
+				const input = document.createElement('input');
+				input.setAttribute('type', 'radio');
+				input.setAttribute('name', 'frame');
+				input.setAttribute('value', x.name);
+				if (x.default) input.setAttribute('checked', true);
+				label.appendChild(input);
+				label.appendChild(document.createTextNode(x.name));
+				li.appendChild(label);
+				frame_list.appendChild(li);
 			});
 		}, { once: true });
 	</script>
@@ -101,6 +176,8 @@
 
 <body>
 	<div id="control">
+		<ul style="list-style: none;" id="frames">
+		</ul>
 		<label>Screenshotを選択<input type="file" id="screenshot" /></label>
 		<button id="download">Download</button>
 	</div>
